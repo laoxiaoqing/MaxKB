@@ -1,0 +1,30 @@
+name: harness-llmrag
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+
+jobs:
+  maxkb-harness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install ruff
+        run: python -m pip install --upgrade pip ruff
+
+      - name: Local harness audit
+        run: python scripts/harness_local_audit.py
+
+      - name: Ruff
+        run: ruff check apps
+
+      - name: Workspace harness (optional)
+        if: hashFiles('../harness/cli.py') != ''
+        working-directory: ..
+        run: python harness/cli.py audit --package maxkb
